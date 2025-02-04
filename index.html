@@ -83,11 +83,19 @@
   <!-- Firebase Firestore via CDN en mode module (Firebase v9) -->
   <script type="module">
     // Importation de la configuration Firebase depuis firebase-config.js
-    import { firebaseConfig } from "./firebase-config.js";
+    // import { firebaseConfig } from "./firebase-config.js";
     // Importation des modules Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-
+    export const firebaseConfig = {
+        apiKey: "AIzaSyDxsafogsZ8G-LLvE8H-QoT_oykFGg_Q0o",
+        authDomain: "booking-app-25e67.firebaseapp.com",
+        projectId: "booking-app-25e67",
+        storageBucket: "booking-app-25e67.firebasestorage.app",
+        messagingSenderId: "576195096693",
+        appId: "1:576195096693:web:dc2eb41f28592a93f4883c",
+        measurementId: "G-8J0L773X41"
+    };
     // Remplacez les valeurs ci-dessous par votre configuration Firebase
     // const firebaseConfig = {
     //   apiKey: "YOUR_API_KEY",

@@ -82,6 +82,8 @@
 
   <!-- Firebase Firestore via CDN en mode module (Firebase v9) -->
   <script type="module">
+    // Importation de la configuration Firebase depuis firebase-config.js
+    import { firebaseConfig } from "./firebase-config.js";
     // Importation des modules Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";

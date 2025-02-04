@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Réservation de créneaux (1 réservation max)</title>
+  <style>
+    /* Couleurs de la page SharePoint */
+    body {
+      background-color: #f0eeea;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    /* Conteneur centré */
+    .container {
+      max-width: 500px;
+      margin: 50px auto;
+      background: white;
+      padding: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      text-align: center;
+    }
+    h3 {
+      color: #0930bc;
+    }
+    label {
+      display: block;
+      text-align: left;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #0ab1f6;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin-top: 20px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0930bc;
+    }
+    .full {
+      color: red;
+    }
+    #message {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3>Réservation de créneaux - Coaching Ego à Eco</h3>
+    <form id="bookingForm">
+      <label for="firstName">Prénom</label>
+      <input type="text" id="firstName" name="firstName" required>
+      
+      <label for="lastName">Nom</label>
+      <input type="text" id="lastName" name="lastName" required>
+      
+      <label for="email">Adresse mail</label>
+      <input type="email" id="email" name="email" required>
+      
+      <label for="timeslot">Choix du créneau</label>
+      <select id="timeslot" name="timeslot" required></select>
+      
+      <button type="submit">Réserver</button>
+    </form>
+    <p id="message"></p>
+  </div>
+
+  <!-- Firebase Firestore via CDN en mode module (Firebase v9) -->
+  <script type="module">
+    // Importation des modules Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    // Remplacez les valeurs ci-dessous par votre configuration Firebase
+    // const firebaseConfig = {
+    //   apiKey: "YOUR_API_KEY",
+    //   authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    //   projectId: "YOUR_PROJECT_ID",
+    //   storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    //   messagingSenderId: "YOUR_SENDER_ID",
+    //   appId: "YOUR_APP_ID"
+    // };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDxsafogsZ8G-LLvE8H-QoT_oykFGg_Q0o",
+        authDomain: "booking-app-25e67.firebaseapp.com",
+        projectId: "booking-app-25e67",
+        storageBucket: "booking-app-25e67.firebasestorage.app",
+        messagingSenderId: "576195096693",
+        appId: "1:576195096693:web:dc2eb41f28592a93f4883c",
+        measurementId: "G-8J0L773X41"
+    };
+    // Initialisation de Firebase et Firestore
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Liste des créneaux horaires
+    const timeSlots = [
+      { id: 'slot1', label: 'Lundi 26 février 10h00 - 11h00' },
+      { id: 'slot2', label: 'Lundi 26 février 11h00 - 12h00' },
+      { id: 'slot3', label: 'Lundi 26 février 12h00 - 13h00' },
+      { id: 'slot4', label: 'Lundi 26 février 14h00 - 15h00' },
+      { id: 'slot5', label: 'Lundi 26 février 15h00 - 16h00' },
+      { id: 'slot6', label: 'Lundi 26 février 16h00 - 17h00' },
+      
+      { id: 'slot7',  label: 'Mercredi 28 février 10h00 - 11h00' },
+      { id: 'slot8',  label: 'Mercredi 28 février 11h00 - 12h00' },
+      { id: 'slot9',  label: 'Mercredi 28 février 12h00 - 13h00' },
+      { id: 'slot10', label: 'Mercredi 28 février 14h00 - 15h00' },
+      { id: 'slot11', label: 'Mercredi 28 février 15h00 - 16h00' },
+      { id: 'slot12', label: 'Mercredi 28 février 16h00 - 17h00' },
+      
+      { id: 'slot13', label: 'Lundi 5 mars 10h00 - 11h00' },
+      { id: 'slot14', label: 'Lundi 5 mars 11h00 - 12h00' },
+      { id: 'slot15', label: 'Lundi 5 mars 12h00 - 13h00' },
+      { id: 'slot16', label: 'Lundi 5 mars 14h00 - 15h00' },
+      { id: 'slot17', label: 'Lundi 5 mars 15h00 - 16h00' },
+      { id: 'slot18', label: 'Lundi 5 mars 16h00 - 17h00' },
+      
+      { id: 'slot19', label: 'Mercredi 7 mars 10h00 - 11h00' },
+      { id: 'slot20', label: 'Mercredi 7 mars 11h00 - 12h00' },
+      { id: 'slot21', label: 'Mercredi 7 mars 12h00 - 13h00' },
+      { id: 'slot22', label: 'Mercredi 7 mars 14h00 - 15h00' },
+      { id: 'slot23', label: 'Mercredi 7 mars 15h00 - 16h00' },
+      { id: 'slot24', label: 'Mercredi 7 mars 16h00 - 17h00' }
+    ];
+    const bookingThreshold = 1; // 1 réservation max par créneau
+
+    // Références aux éléments du DOM
+    const bookingForm = document.getElementById('bookingForm');
+    const selectElem = document.getElementById('timeslot');
+    const messageElem = document.getElementById('message');
+
+    // Met à jour la liste des créneaux en interrogeant Firestore
+    async function updateTimeSlots() {
+      selectElem.innerHTML = "";
+      for (const slot of timeSlots) {
+        // Crée une requête sur la collection "reservations" pour le créneau donné
+        const q = query(collection(db, "reservations"), where("slotId", "==", slot.id));
+        const querySnapshot = await getDocs(q);
+        const isBooked = !querySnapshot.empty; // Si un document existe, le créneau est réservé
+        const option = document.createElement("option");
+        option.value = slot.id;
+        option.textContent = slot.label + (isBooked ? " - COMPLET" : "");
+        if (isBooked) {
+          option.disabled = true;
+          option.className = "full";
+        }
+        selectElem.appendChild(option);
+      }
+    }
+
+    // Écoute en temps réel sur la collection "reservations"
+    onSnapshot(collection(db, "reservations"), () => {
+      updateTimeSlots();
+    });
+
+    // Gère la soumission du formulaire
+    bookingForm.addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const firstName = document.getElementById("firstName").value.trim();
+      const lastName  = document.getElementById("lastName").value.trim();
+      const email     = document.getElementById("email").value.trim();
+      const slotId    = selectElem.value;
+
+      // Vérifie que le créneau n'est pas déjà réservé
+      const q = query(collection(db, "reservations"), where("slotId", "==", slotId));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        messageElem.textContent = "Désolé, ce créneau est déjà réservé.";
+        messageElem.style.color = "red";
+        return;
+      }
+
+      // Enregistre la réservation dans Firestore
+      try {
+        await addDoc(collection(db, "reservations"), {
+          firstName,
+          lastName,
+          email,
+          slotId,
+          timestamp: new Date().toISOString()
+        });
+        messageElem.textContent = "Votre réservation a été enregistrée avec succès !";
+        messageElem.style.color = "#0930bc";
+        bookingForm.reset();
+      } catch (error) {
+        messageElem.textContent = "Erreur lors de la réservation.";
+        messageElem.style.color = "red";
+        console.error("Error adding document: ", error);
+      }
+    });
+
+    // Mise à jour initiale de l'interface
+    updateTimeSlots();
+  </script>
+</body>
+</html>
